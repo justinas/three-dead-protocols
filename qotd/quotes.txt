@@ -1,0 +1,4 @@
+"Software engineering is the part of computer science which is too difficult for the computer scientist." – Friedrich Bauer
+"I can't be as confident about computer science as I can about biology. Biology easily has 500 years of exciting problems to work on. It's at that level." – Donald Knuth
+"Any problem in computer science can be solved with another level of indirection." – David Wheeler
+
