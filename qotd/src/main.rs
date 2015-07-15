@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, stderr, Write};
+use std::net::{TcpListener};
 
 extern crate clap;
 use clap::{App, Arg};
@@ -27,7 +28,16 @@ fn main() {
     let reader = BufReader::new(File::open(filename).ok().expect("Failed to open the quote file."));
     let quotes: Vec<String> = reader.lines().map(|x| x.unwrap()).filter(|x| x.len() != 0).collect();
 
-    println!("{}", filename);
-    println!("{}", port);
-    println!("{:?}", quotes);
+    let listener = TcpListener::bind(("127.0.0.1", port)).unwrap_or_else(|e| panic!("{}", e));
+
+    for inc in listener.incoming() {
+        let conn = match inc {
+            Ok(c) => c,
+            Err(e) => {
+                write!(stderr(), "Errror while trying to accept a connection: {}\n", e);
+                continue;
+            },
+        };
+        write!(stderr(), "Successful connection from: {}\n", conn.peer_addr().unwrap());
+    }
 }
