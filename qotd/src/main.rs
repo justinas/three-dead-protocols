@@ -20,7 +20,7 @@ fn main() {
     let filename = matches.value_of("quote_file").unwrap();
     let port = matches.value_of("port").unwrap_or("17")
         .parse::<u16>().ok().unwrap_or_else(|| {
-            write!(stderr(), "{}", "An invalid port number supplied, defaulting to 17.\n");
+            write!(stderr(), "An invalid port number supplied, defaulting to 17.\n");
             17
         });
 
