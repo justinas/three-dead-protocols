@@ -1,4 +1,5 @@
-use std::io::{stderr, Write};
+use std::fs::File;
+use std::io::{BufRead, BufReader, stderr, Write};
 
 extern crate clap;
 use clap::{App, Arg};
@@ -23,6 +24,10 @@ fn main() {
             17
         });
 
+    let reader = BufReader::new(File::open(filename).ok().expect("Failed to open the quote file."));
+    let quotes: Vec<String> = reader.lines().map(|x| x.unwrap()).filter(|x| x.len() != 0).collect();
+
     println!("{}", filename);
     println!("{}", port);
+    println!("{:?}", quotes);
 }
