@@ -1,0 +1,7 @@
+[package]
+name = "qotd"
+version = "0.1.0"
+authors = ["Justinas Stankevicius <justinas@justinas.me>"]
+
+[dependencies]
+clap = "1.*"
