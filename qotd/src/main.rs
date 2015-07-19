@@ -35,7 +35,7 @@ fn main() {
                            .collect::<Vec<String>>()
                           );
 
-    let listener = TcpListener::bind(("127.0.0.1", port)).unwrap_or_else(|e| panic!("{}", e));
+    let listener = TcpListener::bind(("127.0.0.1", port)).unwrap();
     let mut thread_handles = Vec::new();
 
     for inc in listener.incoming() {
