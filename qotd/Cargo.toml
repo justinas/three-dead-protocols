@@ -5,3 +5,4 @@ authors = ["Justinas Stankevicius <justinas@justinas.me>"]
 
 [dependencies]
 clap = "1.*"
+time = "0.1.*"

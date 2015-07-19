@@ -1,8 +1,11 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, stderr, Write};
 use std::net::{TcpListener};
+use std::sync::Arc;
+use std::thread;
 
 extern crate clap;
+extern crate time;
 use clap::{App, Arg};
 
 fn main() {
@@ -26,18 +29,40 @@ fn main() {
         });
 
     let reader = BufReader::new(File::open(filename).ok().expect("Failed to open the quote file."));
-    let quotes: Vec<String> = reader.lines().map(|x| x.unwrap()).filter(|x| x.len() != 0).collect();
+    let quotes = Arc::new(reader.lines()
+                           .map(|x| x.unwrap())
+                           .filter(|x| x.len() != 0)
+                           .collect::<Vec<String>>()
+                          );
 
     let listener = TcpListener::bind(("127.0.0.1", port)).unwrap_or_else(|e| panic!("{}", e));
+    let mut thread_handles = Vec::new();
 
     for inc in listener.incoming() {
-        let conn = match inc {
+        let mut conn = match inc {
             Ok(c) => c,
             Err(e) => {
                 write!(stderr(), "Errror while trying to accept a connection: {}\n", e);
                 continue;
             },
         };
-        write!(stderr(), "Successful connection from: {}\n", conn.peer_addr().unwrap());
+        let peer_addr = conn.peer_addr().unwrap();
+        write!(stderr(), "Successful connection from: {}\n", peer_addr);
+
+        let local_quotes = quotes.clone();
+
+        thread_handles.push(thread::spawn(move || {
+            let tm = time::now_utc();
+            let day = tm.tm_yday as usize;
+            let quote = &local_quotes[day % local_quotes.len()];
+            match conn.write(quote.as_bytes()) {
+                Ok(_) => write!(stderr(), "Sent the quote successfully to {}.\n", peer_addr),
+                Err(e) => write!(stderr(), "Error while sending the quote to {}: {}\n", peer_addr, e),
+            };
+        }));
+    }
+
+    for h in thread_handles {
+        h.join();
     }
 }
