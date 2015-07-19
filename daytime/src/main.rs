@@ -1,7 +1,26 @@
+use std::collections::HashMap;
 use std::io::{stderr, Write};
+use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::str::FromStr;
 
 extern crate clap;
 use clap::{App, Arg};
+
+extern crate mio;
+use mio::{EventLoop, EventSet, Handler, Token};
+use mio::tcp::TcpListener;
+
+const SERVER: Token = Token(0);
+
+struct EchoHandler(TcpListener);
+
+impl Handler for EchoHandler {
+    type Message = ();
+    type Timeout = ();
+
+    fn ready(&mut self, event_loop: &mut EventLoop<Self>, token: Token, events: EventSet) {
+    }
+}
 
 fn main() {
     let matches = App::new("qotd")
@@ -15,5 +34,11 @@ fn main() {
             7
         });
 
-    println!("{:?}", port);
+    let ip = Ipv4Addr::new(127, 0, 0, 1);
+    let addr = SocketAddrV4::new(ip, port);
+    let listener = TcpListener::bind(&SocketAddr::V4(addr)).unwrap();
+
+    let mut event_loop = EventLoop::new().unwrap();
+    event_loop.register(&listener, SERVER).unwrap();
+    event_loop.run(&mut EchoHandler(listener)).unwrap();
 }
