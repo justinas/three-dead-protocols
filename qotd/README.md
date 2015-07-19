@@ -13,3 +13,10 @@ Then connect with nc (or a similar client).
 
     $ nc 127.0.0.1 1717
     "I can't be as confident about computer science as I can about biology. Biology easily has 500 years of exciting problems to work on. It's at that level." – Donald Knuth
+
+## Limitations
+
+This server does not fully conform to the protocol,
+as conforming servers are expected to
+read any data sent by the client,
+while this server does not perform any reads.
