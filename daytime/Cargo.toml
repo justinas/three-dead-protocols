@@ -1,0 +1,8 @@
+[package]
+name = "daytime"
+version = "0.1.0"
+authors = ["Justinas Stankevicius <justinas@justinas.me>"]
+
+[dependencies]
+clap = "1.*"
+mio = "0.4.*"
