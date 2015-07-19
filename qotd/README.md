@@ -5,7 +5,7 @@ as per [RFC 865](https://tools.ietf.org/html/rfc865)
 and is made concurrent by the use of Rust's
 [threading facilities](http://doc.rust-lang.org/std/thread/index.html).
 
-# Running
+## Running
 
     $ cargo run -- -p 1717 quotes.txt
 
