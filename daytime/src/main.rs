@@ -9,6 +9,8 @@ extern crate mio;
 use mio::{EventLoop, EventSet, Handler, Token};
 use mio::tcp::{TcpListener, TcpStream};
 
+extern crate time;
+
 const SERVER: Token = Token(0);
 
 struct EchoHandler {
@@ -29,7 +31,7 @@ impl EchoHandler {
     fn writable(&mut self, event_loop: &mut EventLoop<Self>, token: Token) {
         {
             let conn = self.connections.get_mut(&token.as_usize()).unwrap();
-            match conn.write_all("hello".as_bytes()) {
+            match write!(conn, "{}", time::now_utc().rfc822()) {
                 Ok(_) => {
                     event_loop.deregister(conn).unwrap();
                     let addr = conn.peer_addr().unwrap();

@@ -6,3 +6,4 @@ authors = ["Justinas Stankevicius <justinas@justinas.me>"]
 [dependencies]
 clap = "1.*"
 mio = "0.4.*"
+time = "0.1.*"
