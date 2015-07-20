@@ -94,7 +94,8 @@ fn main() {
 
     let ip = Ipv4Addr::new(127, 0, 0, 1);
     let addr = SocketAddrV4::new(ip, port);
-    let listener = TcpListener::bind(&SocketAddr::V4(addr)).unwrap();
+    let listener = TcpListener::bind(&SocketAddr::V4(addr))
+        .unwrap_or_else(|e| { panic!("{}", e)});
 
     let mut event_loop = EventLoop::new().unwrap();
     event_loop.register(&listener, SERVER).unwrap();
