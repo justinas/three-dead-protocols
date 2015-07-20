@@ -1,18 +1,18 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::{stderr, Write};
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
-use std::str::FromStr;
 
 extern crate clap;
 use clap::{App, Arg};
 
 extern crate mio;
 use mio::{EventLoop, EventSet, Handler, Token};
-use mio::tcp::TcpListener;
+use mio::tcp::{TcpListener, TcpStream};
 
 const SERVER: Token = Token(0);
 
 struct EchoHandler {
+    connections: BTreeMap<usize, TcpStream>,
     listener: TcpListener,
     next_token: usize,
 }
@@ -20,9 +20,27 @@ struct EchoHandler {
 impl EchoHandler {
     fn new(l: TcpListener) -> EchoHandler {
         EchoHandler {
+            connections: BTreeMap::new(),
             listener: l,
             next_token: 1
         }
+    }
+
+    fn writable(&mut self, event_loop: &mut EventLoop<Self>, token: Token) {
+        {
+            let conn = self.connections.get_mut(&token.as_usize()).unwrap();
+            match conn.write_all("hello".as_bytes()) {
+                Ok(_) => {
+                    event_loop.deregister(conn).unwrap();
+                    let addr = conn.peer_addr().unwrap();
+                    write!(stderr(), "Sent the time to {} succesfully\n", addr);
+                },
+                Err(e) => {
+                    write!(stderr(), "Error while writing: {}\n", e);
+                }
+            }
+        }
+        self.connections.remove(&token.as_usize()).unwrap();
     }
 }
 
@@ -48,9 +66,14 @@ impl Handler for EchoHandler {
                 };
 
                 event_loop.register(&client, Token(self.next_token));
+                self.connections.insert(self.next_token, client);
                 self.next_token += 1;
             }
-            _ => {}
+            _  => {
+                if events.is_writable() {
+                    self.writable(event_loop, token);
+                }
+            }
         }
     }
 }
