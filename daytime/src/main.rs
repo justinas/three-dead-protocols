@@ -12,13 +12,46 @@ use mio::tcp::TcpListener;
 
 const SERVER: Token = Token(0);
 
-struct EchoHandler(TcpListener);
+struct EchoHandler {
+    listener: TcpListener,
+    next_token: usize,
+}
+
+impl EchoHandler {
+    fn new(l: TcpListener) -> EchoHandler {
+        EchoHandler {
+            listener: l,
+            next_token: 1
+        }
+    }
+}
 
 impl Handler for EchoHandler {
     type Message = ();
     type Timeout = ();
 
     fn ready(&mut self, event_loop: &mut EventLoop<Self>, token: Token, events: EventSet) {
+        match token {
+            SERVER => {
+                let client = match self.listener.accept() {
+                    // As per documentation, Ok(None) means WOULDBLOCK.
+                    Ok(None) => return,
+                    Ok(Some(c)) => {
+                        let addr = c.peer_addr().unwrap();
+                        write!(stderr(), "Succesful connection from {}\n", addr);
+                        c
+                    }
+                    Err(e) => {
+                        write!(stderr(), "Error while accepting: {}\n", e);
+                        return;
+                    }
+                };
+
+                event_loop.register(&client, Token(self.next_token));
+                self.next_token += 1;
+            }
+            _ => {}
+        }
     }
 }
 
@@ -40,5 +73,5 @@ fn main() {
 
     let mut event_loop = EventLoop::new().unwrap();
     event_loop.register(&listener, SERVER).unwrap();
-    event_loop.run(&mut EchoHandler(listener)).unwrap();
+    event_loop.run(&mut EchoHandler::new(listener)).unwrap();
 }
