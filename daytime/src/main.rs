@@ -81,7 +81,7 @@ impl Handler for EchoHandler {
 }
 
 fn main() {
-    let matches = App::new("qotd")
+    let matches = App::new("daytime")
         .author("Justinas Stankevicius")
         .arg(Arg::with_name("port").short("p").takes_value(true))
         .get_matches();
